@@ -1,0 +1,11 @@
+package {{ .PackageName }} 
+{{ range .Types }}
+{{- $typeName := .GoTypeName }}
+type {{ $typeName }} string
+
+const(
+{{range $key, $value := .GoConstants}}
+{{- $key }} {{ $typeName }} = "{{ $value }}"
+{{ end -}}
+)
+{{ end }}
