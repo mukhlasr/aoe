@@ -1,11 +1,56 @@
 package {{ .PackageName }} 
-{{ range .Types }}
-{{- $typeName := .GoTypeName }}
+
+import (
+	"database/sql/driver"
+	"fmt"
+)
+
+{{- range .Types }}
+{{ $typeName := .GoTypeName }}
 type {{ $typeName }} string
 
+
+
 const(
-{{range $key, $value := .GoConstants}}
-{{- $key }} {{ $typeName }} = "{{ $value }}"
-{{ end -}}
+{{- range $key, $value := .GoConstants}}
+{{ $key }} {{ $typeName }} = "{{ $value }}"
+{{- end }}
 )
+
+func (e *{{ $typeName }}) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = {{ $typeName }}(s)
+	case string:
+		*e = {{ $typeName }}(s)
+	default:
+		return fmt.Errorf("unsupported scan type for {{ $typeName }}: %T", src)
+	}
+	return nil
+}
+
+type Null{{ $typeName }} struct {
+	{{ $typeName }} {{ $typeName }}
+	Valid       bool // Valid is true if AccountType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *Null{{ $typeName }}) Scan(value interface{}) error {
+	if value == nil {
+		ns.{{ $typeName }}, ns.Valid = "", false
+		return nil
+	}
+
+	ns.Valid = true
+	return ns.{{ $typeName }}.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns Null{{ $typeName }}) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.{{ $typeName }}), nil
+}
+
 {{ end }}
