@@ -30,7 +30,7 @@ func GetEnums(ctx context.Context) ([]Enum, error) {
 	for rows.Next() {
 		var name, val string
 		if err := rows.Scan(&name, &val); err != nil {
-			break
+			return nil, err
 		}
 
 		vals := m[name]

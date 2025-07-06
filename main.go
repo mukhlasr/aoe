@@ -8,7 +8,6 @@ import (
 	"go/format"
 	"html/template"
 	"io"
-	"log"
 	"os"
 )
 
@@ -31,7 +30,8 @@ func main() {
 		os.Exit(-1)
 	}
 
-	log.Println(generateEnum())
+	// log.Println(generateEnum())
+	fmt.Println(GetTables(context.Background()))
 }
 
 func generateEnum() error {
@@ -63,7 +63,7 @@ func generateEnum() error {
 
 	b, err = format.Source(b)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to format source code: %w", err)
 	}
 
 	fmt.Println(string(b))
