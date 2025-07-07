@@ -1,25 +1,41 @@
 package main
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 func snakeToPascalCase(str string) string {
 	// make sure to lowercase it all
-	str = strings.ToLower(str)
+	var res string
 
-	builder := strings.Builder{}
-	_ = builder.WriteByte(capitalize(str[0]))
-
-	for i := 1; i < len(str); i++ {
-		if str[i] == '_' && i < len(str)-1 {
-			_ = builder.WriteByte(capitalize(str[i+1]))
-			i++
+	checkpoint := 0
+	for i := 0; i <= len(str); i++ {
+		if i == len(str) || str[i] == '_' {
+			res += CapitalizeWord(str[checkpoint:i])
+			checkpoint = i + 1
 			continue
 		}
-
-		_ = builder.WriteByte(str[i])
 	}
 
-	return builder.String()
+	fmt.Println(str, res)
+	return res
+}
+
+func CapitalizeWord(str string) string {
+	str = strings.ToLower(str)
+	if str == "" {
+		return ""
+	}
+
+	if str == "id" {
+		return "ID"
+	}
+
+	b := []byte(str)
+	b[0] = capitalize(b[0])
+
+	return string(b)
 }
 
 func capitalize(b byte) byte {
