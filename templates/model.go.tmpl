@@ -1,0 +1,16 @@
+package {{ .PackageName }} 
+
+import (
+{{- range .ImportedPackages }}
+"{{ . }}"
+{{- end }}
+)
+
+{{- range .Types }}
+
+type {{ .Name }} struct {
+    {{- range .Fields }}
+    {{ .Name }} {{ .Type }}
+    {{- end }}
+}
+{{- end }}

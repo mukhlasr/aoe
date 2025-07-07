@@ -1,71 +1,70 @@
 package main
 
 import (
-	"bytes"
 	"context"
+	"errors"
 	"flag"
 	"fmt"
-	"go/format"
-	"html/template"
-	"io"
 	"os"
+	"path"
+	"path/filepath"
 )
 
 func main() {
 	var (
-		dsn    string
-		schema string
+		dsn         string
+		schema      string
+		dir         string
+		packageName string
 	)
 	flag.StringVar(&dsn, "dsn", "", "dsn to postgres")
 	flag.StringVar(&schema, "schema", "public", "schema name")
+	flag.StringVar(&dir, "dir", "./", "output directory")
+	flag.StringVar(&packageName, "package", "", "package name for the generated code. The default will be the same as output directory")
 	flag.Parse()
 
-	if dsn == "" {
+	if dsn == "" || dir == "" {
 		flag.PrintDefaults()
 		return
 	}
 
-	if err := initDB(context.TODO(), dsn); err != nil {
-		fmt.Println("aoe: failed to init db:", err)
-		os.Exit(-1)
+	exitOnError(initDB(context.TODO(), dsn))
+
+	if packageName == "" {
+		name, err := packageNameFromDir(dir)
+		exitOnError(err)
+
+		packageName = name
 	}
 
-	// log.Println(generateEnum())
-	fmt.Println(GetTables(context.Background()))
+	constFile, err := os.OpenFile(path.Join(dir, "const.go"), os.O_CREATE|os.O_WRONLY, 0644)
+	exitOnError(err)
+
+	modelFile, err := os.OpenFile(path.Join(dir, "model.go"), os.O_CREATE|os.O_WRONLY, 0644)
+	exitOnError(err)
+
+	exitOnError(GenerateEnumsAsConstants(packageName, constFile))
+	exitOnError(generateTablesAsModels(packageName, modelFile))
 }
 
-func generateEnum() error {
-	type tmplModel struct {
-		PackageName string
-		Types       []Enum
-	}
-	tmpl, err := template.ParseFS(templateFS, "templates/enum.go.tmpl")
+func packageNameFromDir(dir string) (string, error) {
+	d, err := filepath.Abs(dir)
 	if err != nil {
-		return err
+		return "", fmt.Errorf("failed to get package name from directory: %w", err)
 	}
 
-	var buf bytes.Buffer
-
-	enums, err := GetEnums(context.TODO())
-	if err != nil {
-		return err
+	if d == "/" {
+		return "", errors.New("unable to generate on the root directory")
 	}
 
-	err = tmpl.Execute(&buf, tmplModel{PackageName: "db", Types: enums})
-	if err != nil {
-		return err
+	return path.Base(d), nil
+
+}
+
+func exitOnError(err error) {
+	if err == nil {
+		return
 	}
 
-	b, err := io.ReadAll(&buf)
-	if err != nil {
-		return err
-	}
-
-	b, err = format.Source(b)
-	if err != nil {
-		return fmt.Errorf("failed to format source code: %w", err)
-	}
-
-	fmt.Println(string(b))
-	return nil
+	fmt.Fprintln(os.Stderr, "aoe:", err.Error())
 }

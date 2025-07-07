@@ -61,10 +61,6 @@ func GetTableColumns(ctx context.Context, tabName string) ([]Column, error) {
 	return res, nil
 }
 
-func (c Column) TitleizeName() string {
-	return snakeToPascalCase(c.Name)
-}
-
 func (c Column) GoType() GoType {
 	var typ string
 	var packageName string
@@ -72,23 +68,27 @@ func (c Column) GoType() GoType {
 	case "integer":
 		typ = "int"
 		if c.Nullable {
+			packageName = "database/sql"
 			typ = "sql.NullInt32"
 		}
 	case "bigint":
 		typ = "int64"
 		if c.Nullable {
+			packageName = "database/sql"
 			typ = "sql.NullInt64"
 		}
 	case "text", "character varying":
 		typ = "string"
 
 		if c.Nullable {
+			packageName = "database/sql"
 			typ = "sql.NullString"
 		}
 	case "boolean":
 		typ = "bool"
 
 		if c.Nullable {
+			packageName = "database/sql"
 			typ = "sql.NullBool"
 		}
 	case "timestamp without time zone", "timestamp with time zone":
@@ -96,6 +96,7 @@ func (c Column) GoType() GoType {
 		typ = "time.Time"
 
 		if c.Nullable {
+			packageName = "database/sql"
 			typ = "sql.NullTime"
 		}
 	case "uuid":

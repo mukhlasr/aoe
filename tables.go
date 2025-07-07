@@ -48,7 +48,7 @@ func GetTables(ctx context.Context) ([]Table, error) {
 			continue
 		}
 
-		tab.Name = snakeToPascalCase(n)
+		tab.Name = n
 		cols, err := GetTableColumns(ctx, n)
 		if err != nil {
 			return nil, err
