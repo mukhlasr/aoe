@@ -6,18 +6,16 @@ import (
 )
 
 {{- range .Types }}
-{{ $typeName := .GoTypeName }}
+{{ $typeName := .Name }}
 type {{ $typeName }} string
 
-
-
 const(
-{{- range $key, $value := .GoConstants}}
-{{ $key }} {{ $typeName }} = "{{ $value }}"
-{{- end }}
+    {{- range .Consts }}
+    {{ .Name }} {{ .Type }} = "{{ .Value }}"
+    {{- end }}
 )
 
-func (e *{{ $typeName }}) Scan(src interface{}) error {
+func (e *{{ $typeName }}) Scan(src any) error {
 	switch s := src.(type) {
 	case []byte:
 		*e = {{ $typeName }}(s)
@@ -35,7 +33,7 @@ type Null{{ $typeName }} struct {
 }
 
 // Scan implements the Scanner interface.
-func (ns *Null{{ $typeName }}) Scan(value interface{}) error {
+func (ns *Null{{ $typeName }}) Scan(value any) error {
 	if value == nil {
 		ns.{{ $typeName }}, ns.Valid = "", false
 		return nil
