@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -18,7 +17,6 @@ func snakeToPascalCase(str string) string {
 		}
 	}
 
-	fmt.Println(str, res)
 	return res
 }
 
