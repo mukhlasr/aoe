@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"html/template"
 	"io"
-	"maps"
 
 	"golang.org/x/tools/imports"
 )
@@ -63,7 +62,7 @@ func generateTablesAsModels(packageName string, out io.Writer) error {
 		model.Types = append(model.Types, tableModel)
 	}
 
-	for pack := range maps.Keys(mapPackages) {
+	for pack := range mapPackages {
 		model.ImportedPackages = append(model.ImportedPackages, pack)
 	}
 
