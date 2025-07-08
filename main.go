@@ -28,8 +28,6 @@ func main() {
 		return
 	}
 
-	exitOnError(initDB(context.TODO(), dsn))
-
 	if packageName == "" {
 		name, err := packageNameFromDir(dir)
 		exitOnError(err)
@@ -37,17 +35,22 @@ func main() {
 		packageName = name
 	}
 
+	exitOnError(initDB(context.TODO(), dsn))
+
 	constFile, err := os.OpenFile(path.Join(dir, "const.go"), os.O_CREATE|os.O_WRONLY, 0644)
 	exitOnError(err)
+	exitOnError(GenerateEnumsAsConstants(packageName, constFile))
 
 	modelFile, err := os.OpenFile(path.Join(dir, "model.go"), os.O_CREATE|os.O_WRONLY, 0644)
 	exitOnError(err)
-
-	exitOnError(GenerateEnumsAsConstants(packageName, constFile))
 	exitOnError(generateTablesAsModels(packageName, modelFile))
 }
 
 func packageNameFromDir(dir string) (string, error) {
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		return "", errors.New("the output directory does not exist")
+	}
+
 	d, err := filepath.Abs(dir)
 	if err != nil {
 		return "", fmt.Errorf("failed to get package name from directory: %w", err)
@@ -67,4 +70,5 @@ func exitOnError(err error) {
 	}
 
 	fmt.Fprintln(os.Stderr, "aoe:", err.Error())
+	os.Exit(1)
 }
