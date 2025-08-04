@@ -106,6 +106,19 @@ func (c Column) GoType() GoType {
 		if c.Nullable {
 			typ = "uuid.NullUUID"
 		}
+	case "USER-DEFINED":
+		typ = snakeToPascalCase(c.UDTName)
+
+		if c.Nullable {
+			typ = "Null" + typ
+		}
+	case "numeric":
+		typ = "float64"
+
+		if c.Nullable {
+			packageName = "database/sql"
+			typ = "sql.NullFloat64"
+		}
 	default:
 		// Fallback to any for unsupported types
 		typ = "any"
