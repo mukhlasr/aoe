@@ -65,24 +65,11 @@ func (c Column) GoType() GoType {
 	var typ string
 	var packageName string
 	switch c.DataType {
-	case "integer":
-		typ = "int"
-		if c.Nullable {
-			packageName = "database/sql"
-			typ = "sql.NullInt32"
-		}
 	case "bigint":
 		typ = "int64"
 		if c.Nullable {
 			packageName = "database/sql"
 			typ = "sql.NullInt64"
-		}
-	case "text", "character varying":
-		typ = "string"
-
-		if c.Nullable {
-			packageName = "database/sql"
-			typ = "sql.NullString"
 		}
 	case "boolean":
 		typ = "bool"
@@ -90,6 +77,32 @@ func (c Column) GoType() GoType {
 		if c.Nullable {
 			packageName = "database/sql"
 			typ = "sql.NullBool"
+		}
+	case "date":
+		typ = "time.Time"
+		if c.Nullable {
+			packageName = "database/sql"
+			typ = "sql.NullTime"
+		}
+	case "integer":
+		typ = "int"
+		if c.Nullable {
+			packageName = "database/sql"
+			typ = "sql.NullInt32"
+		}
+	case "numeric":
+		typ = "float64"
+
+		if c.Nullable {
+			packageName = "database/sql"
+			typ = "sql.NullFloat64"
+		}
+	case "text", "character varying":
+		typ = "string"
+
+		if c.Nullable {
+			packageName = "database/sql"
+			typ = "sql.NullString"
 		}
 	case "timestamp without time zone", "timestamp with time zone":
 		packageName = "time"
@@ -111,13 +124,6 @@ func (c Column) GoType() GoType {
 
 		if c.Nullable {
 			typ = "Null" + typ
-		}
-	case "numeric":
-		typ = "float64"
-
-		if c.Nullable {
-			packageName = "database/sql"
-			typ = "sql.NullFloat64"
 		}
 	default:
 		// Fallback to any for unsupported types
