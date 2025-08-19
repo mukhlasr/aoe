@@ -73,6 +73,7 @@ func generateTablesAsModels(packageName string, out io.Writer) error {
 
 	b, err := imports.Process("", buf.Bytes(), &imports.Options{
 		FormatOnly: true,
+		Comments:   true,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to format source code: %w", err)
